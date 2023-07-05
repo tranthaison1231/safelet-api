@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
-import { logger } from '../../middlewares/logger';
-import { auth } from '../../middlewares/auth';
+import { logger } from '@/middlewares/logger';
+import { auth } from '@/middlewares/auth';
 
 export const router: Router = Router();
 

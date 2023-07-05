@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express, { Express } from 'express';
-import { router as alarms } from './modules/alarms';
-import { router as users } from './modules/users';
+import { router as alarms } from '@/modules/alarms/alarms.controller';
+import { router as users } from '@/modules/users/users.controller';
 import mongoose from 'mongoose';
 
 dotenv.config();
