@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "start": "node public/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q public/index.js\""
+    "start": "node api/index.js",
+    "dev": "tsc --watch & nodemon public/index.js"
   },
   "keywords": [],
   "author": "Son Tran",

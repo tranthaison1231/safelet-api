@@ -21,7 +21,9 @@ const bootstrap = async () => {
       console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
     });
   } catch (error) {
+    console.error('Failed to connect to the Mongo server!!');
     console.log(error);
+    throw error;
   }
 };
 

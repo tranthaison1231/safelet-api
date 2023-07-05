@@ -11,5 +11,5 @@ router.get('/', logger, async (_req: Request, res: Response) => {
 });
 
 router.get('/:id', logger, auth, (req: Request, res: Response) => {
-  res.send('Hello this is API Route:' + req.params.id);
+  res.send('API Route:' + req.params.id);
 });
