@@ -6,8 +6,12 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Express + TypeScript Server 🚀🚀');
+app.get('/api', (req: Request, res: Response) => {
+  res.send('Hello this is API Route 🚀🚀');
+});
+
+app.get('/api/:id', (req: Request, res: Response) => {
+  res.send('Hello this is API Route:' + req.params.id);
 });
 
 app.listen(port, () => {
