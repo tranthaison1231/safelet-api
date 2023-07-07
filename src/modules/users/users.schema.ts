@@ -1,10 +1,33 @@
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-});
+export enum Gender {
+  Male = 'Male',
+  Female = 'Female',
+}
+export interface User {
+  name?: string;
+  email: string;
+  gender: Gender;
+  password: string;
+  salt?: string;
+}
 
-export const User = mongoose.model('users', UserSchema);
+export const UserSchema = mongoose.model(
+  'users',
+  new mongoose.Schema<User>({
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    gender: String,
+    password: {
+      type: String,
+      required: true,
+    },
+    salt: String,
+  })
+);

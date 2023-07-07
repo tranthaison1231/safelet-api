@@ -17,6 +17,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "outDir": "./public",
+    "strict": true,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
