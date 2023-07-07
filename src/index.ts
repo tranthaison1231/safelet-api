@@ -1,15 +1,14 @@
+import { router as alarms } from '@/modules/alarms/alarms.controller';
+import { router as auth } from '@/modules/auth/auth.controller';
+import { router as users } from '@/modules/users/users.controller';
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
-import { router as alarms } from '@/modules/alarms/alarms.controller';
-import { router as users } from '@/modules/users/users.controller';
-import { router as auth } from '@/modules/auth/auth.controller';
-import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
 dotenv.config();
 
 const app: Express = express();
-app.use(bodyParser.json());
+app.use(express.json());
 const port = process.env.PORT;
 
 app.use('/api', auth);
