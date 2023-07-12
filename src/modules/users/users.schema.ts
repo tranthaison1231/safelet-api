@@ -12,22 +12,29 @@ export interface User {
   salt?: string;
 }
 
-export const UserSchema = mongoose.model(
-  'users',
-  new mongoose.Schema<User>({
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    gender: String,
-    password: {
-      type: String,
-      required: true,
-    },
-    salt: String,
-  })
-);
+const UserSchema = new mongoose.Schema<User>({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  gender: String,
+  password: {
+    type: String,
+    required: true,
+  },
+  salt: String,
+});
+
+UserSchema.set('toJSON', {
+  transform: function (_doc, ret) {
+    delete ret.password;
+    delete ret.salt;
+    return ret;
+  },
+});
+
+export const UserModel = mongoose.model('users', UserSchema);

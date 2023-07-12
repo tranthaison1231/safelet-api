@@ -5,17 +5,17 @@ import { z } from 'zod';
 import { validateRequest } from 'zod-express-middleware';
 import { userUpdatedDto } from './dto/user-payload.dto';
 import { UserService } from './users.service';
+import { auth } from '@/middlewares/auth';
 
 export const router: Router = Router();
 
 router
-  .get('/', logger, async (_req: Request, res: Response) => {
+  .get('/', auth, async (_req: Request, res: Response) => {
     const users = await UserService.getAll();
     res.status(200).json({ users });
   })
   .get(
     '/:id',
-    logger,
     validateRequest({
       params: z.object({
         id: zodValidators.mongoID,

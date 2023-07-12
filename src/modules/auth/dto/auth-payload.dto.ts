@@ -22,3 +22,18 @@ export const signUpDto = z.object({
 });
 
 export type SignUpDto = Required<z.infer<typeof signUpDto>>;
+
+export const signInDto = z.object({
+  email: z
+    .string({
+      required_error: 'Email is required',
+    })
+    .email('Email is not valid. Please provide a valid email address.'),
+  password: z
+    .string({
+      required_error: 'Password is required',
+    })
+    .min(4),
+});
+
+export type SignInDto = Required<z.infer<typeof signInDto>>;
