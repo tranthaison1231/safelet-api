@@ -1,3 +1,4 @@
+import cors from 'cors';
 import { router as alarms } from '@/modules/alarms/alarms.controller';
 import { router as auth } from '@/modules/auth/auth.controller';
 import { router as users } from '@/modules/users/users.controller';
@@ -14,6 +15,7 @@ const bootstrap = async () => {
 
     const app: Express = express();
     app.use(express.json());
+    app.use(cors());
     app.use(logger);
     app.use(logging);
 
