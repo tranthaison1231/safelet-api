@@ -1,14 +1,12 @@
 import { router as alarms } from '@/modules/alarms/alarms.controller';
 import { router as auth } from '@/modules/auth/auth.controller';
 import { router as users } from '@/modules/users/users.controller';
-import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { logger } from './middlewares/logger';
 import { errorFilter } from './middlewares/error-filter';
 import { logging } from './middlewares/logging';
-
-dotenv.config();
+import { MONGO_URI, PORT } from './utils/constants';
 
 const bootstrap = async () => {
   try {
@@ -18,7 +16,6 @@ const bootstrap = async () => {
     app.use(express.json());
     app.use(logger);
     app.use(logging);
-    const port = process.env.PORT;
 
     app.use('/api', auth);
     app.use('/api/users', users);
@@ -29,10 +26,10 @@ const bootstrap = async () => {
 
     app.use(errorFilter);
 
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(MONGO_URI);
     console.log('🚀 Connected to MongoDB');
-    app.listen(port, () => {
-      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    app.listen(PORT, () => {
+      console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('Failed to connect to the Mongo server!!');

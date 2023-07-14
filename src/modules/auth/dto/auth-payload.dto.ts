@@ -37,3 +37,23 @@ export const signInDto = z.object({
 });
 
 export type SignInDto = Required<z.infer<typeof signInDto>>;
+
+export const forgotPasswordDto = z.object({
+  email: z
+    .string({
+      required_error: 'Email is required',
+    })
+    .email('Email is not valid. Please provide a valid email address.'),
+});
+
+export type ForgotPasswordDto = Required<z.infer<typeof forgotPasswordDto>>;
+
+export const resetPasswordDto = z.object({
+  password: z
+    .string({
+      required_error: 'Password is required',
+    })
+    .min(4),
+});
+
+export type ResetPasswordDto = Required<z.infer<typeof resetPasswordDto>>;

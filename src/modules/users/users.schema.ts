@@ -37,4 +37,5 @@ UserSchema.set('toJSON', {
   },
 });
 
+export type UserDocument = User & mongoose.Document;
 export const UserModel = mongoose.model('users', UserSchema);

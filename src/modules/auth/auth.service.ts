@@ -1,9 +1,11 @@
-import { comparePassword, hashPassword } from '@/utils/password';
-import { User, UserModel } from '../users/users.schema';
-import { SignInDto, SignUpDto } from './dto/auth-payload.dto';
-import * as bcrypt from 'bcrypt';
+import { mailService } from '@/lib/mail.service';
+import { CLIENT_URL, JWT_SECRET } from '@/utils/constants';
 import { NotFoundException, UnauthorizedException } from '@/utils/exceptions';
+import { comparePassword, hashPassword } from '@/utils/password';
+import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { User, UserDocument, UserModel } from '../users/users.schema';
+import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from './dto/auth-payload.dto';
 
 export class AuthService {
   static async signUp(signUpDto: SignUpDto) {
@@ -22,7 +24,7 @@ export class AuthService {
   }
 
   static async createToken({ userId }: { userId: string }) {
-    return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
   }
 
   static async signIn({ email, password }: SignInDto) {
@@ -32,5 +34,31 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Password does not match');
     const token = await this.createToken({ userId: user._id.toString() });
     return { token };
+  }
+
+  static async forgotPassword({ email }: ForgotPasswordDto) {
+    try {
+      const user = await UserModel.findOne({ email: email }).exec();
+      if (!user) throw new NotFoundException('User not found');
+      const token = await this.createToken({ userId: user._id.toString() });
+      await mailService.sendMail({
+        to: user.email,
+        subject: 'Reset Password',
+        html: `<p>Click <a href="${CLIENT_URL}/reset-password?token=${token}">here</a> to reset your password.</p>`,
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static async resetPassword({ password }: ResetPasswordDto, user: UserDocument) {
+    try {
+      user.password = await hashPassword(password, user.salt);
+      await user.save();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 }

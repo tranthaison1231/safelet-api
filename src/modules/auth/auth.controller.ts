@@ -1,9 +1,8 @@
-import { logger } from '@/middlewares/logger';
+import { auth } from '@/middlewares/auth';
 import { NextFunction, Request, Response, Router } from 'express';
 import { validateRequest } from 'zod-express-middleware';
 import { AuthService } from './auth.service';
-import { signUpDto, signInDto } from './dto/auth-payload.dto';
-import { auth } from '@/middlewares/auth';
+import { signInDto, signUpDto, forgotPasswordDto, resetPasswordDto } from './dto/auth-payload.dto';
 
 export const router: Router = Router();
 
@@ -16,6 +15,31 @@ router
     async (req: Request, res: Response) => {
       const user = await AuthService.signUp(req.body);
       res.status(201).json({ user });
+    }
+  )
+  .post(
+    '/forgot-password',
+    validateRequest({
+      body: forgotPasswordDto,
+    }),
+    async (req: Request, res: Response) => {
+      await AuthService.forgotPassword(req.body);
+      res.status(200).json({
+        message: 'Please check your email to reset your password.',
+      });
+    }
+  )
+  .post(
+    '/reset-password',
+    auth,
+    validateRequest({
+      body: resetPasswordDto,
+    }),
+    async (req: Request, res: Response) => {
+      await AuthService.resetPassword(req.body, req.user);
+      res.status(200).json({
+        message: 'Reset password successfully.',
+      });
     }
   )
   .post(
