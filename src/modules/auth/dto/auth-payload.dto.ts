@@ -25,7 +25,7 @@ export const signUpDto = z.object({
     .min(4),
   phoneNumber: z
     .string({
-      required_error: 'Password is required',
+      required_error: 'PhoneNumber is required',
     })
     .min(10),
 });
