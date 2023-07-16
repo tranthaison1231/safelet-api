@@ -37,6 +37,16 @@ export class AuthService {
     }
   }
 
+  static async confirmEmail(user: UserDocument) {
+    try {
+      user.isVerified = true;
+      await user.save();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   static async sendEmailVerification({ email, token }: { email: string; token: string }) {
     try {
       await mailService.sendMail({

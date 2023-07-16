@@ -48,6 +48,12 @@ router
       });
     }
   )
+  .put('/confirm-email', auth, async (req: Request, res: Response) => {
+    await AuthService.confirmEmail(req.user);
+    res.status(200).json({
+      message: 'Verify email successfully.',
+    });
+  })
   .post(
     '/reset-password',
     auth,
