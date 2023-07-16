@@ -2,14 +2,7 @@ import { auth } from '@/middlewares/auth';
 import { NextFunction, Request, Response, Router } from 'express';
 import { validateRequest } from 'zod-express-middleware';
 import { AuthService } from './auth.service';
-import {
-  signInDto,
-  signUpDto,
-  forgotPasswordDto,
-  resetPasswordDto,
-  verifyEmailDto,
-  confirmEmailDto,
-} from './dto/auth-payload.dto';
+import { signInDto, signUpDto, forgotPasswordDto, resetPasswordDto, confirmEmailDto } from './dto/auth-payload.dto';
 
 export const router: Router = Router();
 
@@ -42,19 +35,12 @@ router
       });
     }
   )
-  .put(
-    '/verify-email',
-    auth,
-    validateRequest({
-      body: verifyEmailDto,
-    }),
-    async (req: Request, res: Response) => {
-      await AuthService.verifyEmail(req.body, req.user);
-      res.status(200).json({
-        message: 'Please check your email to verify your account.',
-      });
-    }
-  )
+  .put('/verify-email', auth, async (req: Request, res: Response) => {
+    await AuthService.verifyEmail(req.body, req.user);
+    res.status(200).json({
+      message: 'Please check your email to verify your account.',
+    });
+  })
   .put(
     '/confirm-email',
     auth,
