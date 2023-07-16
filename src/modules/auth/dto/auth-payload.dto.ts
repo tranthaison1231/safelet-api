@@ -1,10 +1,15 @@
-import { Gender } from '@/modules/users/users.schema';
 import { z } from 'zod';
 
 export const signUpDto = z.object({
-  name: z
+  firstName: z
     .string({
-      required_error: 'Name is required',
+      required_error: 'First Name is required',
+    })
+    .min(4)
+    .max(255),
+  lastName: z
+    .string({
+      required_error: 'Last Name is required',
     })
     .min(4)
     .max(255),
@@ -18,7 +23,11 @@ export const signUpDto = z.object({
       required_error: 'Password is required',
     })
     .min(4),
-  gender: z.nativeEnum(Gender),
+  phoneNumber: z
+    .string({
+      required_error: 'Password is required',
+    })
+    .min(10),
 });
 
 export type SignUpDto = Required<z.infer<typeof signUpDto>>;

@@ -1,19 +1,20 @@
 import mongoose from 'mongoose';
 
-export enum Gender {
-  Male = 'Male',
-  Female = 'Female',
-}
 export interface User {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  gender: Gender;
+  phoneNumber: string;
   password: string;
   salt?: string;
 }
 
 const UserSchema = new mongoose.Schema<User>({
-  name: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },
@@ -21,7 +22,9 @@ const UserSchema = new mongoose.Schema<User>({
     type: String,
     required: true,
   },
-  gender: String,
+  phoneNumber: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,
