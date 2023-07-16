@@ -5,7 +5,7 @@ export const signUpDto = z.object({
     .string({
       required_error: 'First Name is required',
     })
-    .min(4)
+    .min(2)
     .max(255),
   lastName: z
     .string({
