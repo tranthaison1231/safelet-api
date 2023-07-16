@@ -9,18 +9,15 @@ import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from './dto
 
 export class AuthService {
   static async signUp(signUpDto: SignUpDto) {
-    try {
-      const body: User = signUpDto;
-      const salt = bcrypt.genSaltSync(10);
-      body.password = await hashPassword(signUpDto.password, salt);
-      body.salt = salt;
+    const body: User = signUpDto;
+    const user = await UserModel.findOne({ email: signUpDto.email }).exec();
+    if (user) throw new UnauthorizedException('Email already exists');
+    const salt = bcrypt.genSaltSync(10);
+    body.password = await hashPassword(signUpDto.password, salt);
+    body.salt = salt;
 
-      const user = await UserModel.create(body);
-      return user;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    const newUser = await UserModel.create(body);
+    return newUser;
   }
 
   static async createToken({ userId }: { userId: string }) {

@@ -12,9 +12,13 @@ router
     validateRequest({
       body: signUpDto,
     }),
-    async (req: Request, res: Response) => {
-      const user = await AuthService.signUp(req.body);
-      res.status(201).json({ user });
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const user = await AuthService.signUp(req.body);
+        res.status(201).json({ user });
+      } catch (error) {
+        next(error);
+      }
     }
   )
   .post(
