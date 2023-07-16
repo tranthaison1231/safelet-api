@@ -17,7 +17,37 @@ export class AuthService {
     body.salt = salt;
 
     const newUser = await UserModel.create(body);
+    const token = await this.createToken({ userId: newUser._id.toString() });
+    await this.sendEmailVerification({
+      email: newUser.email,
+      token,
+    });
     return newUser;
+  }
+
+  static async verifyEmail({ email }: { email: string }, user: UserDocument) {
+    try {
+      const user = await UserModel.findOne({ email: email }).exec();
+      if (!user) throw new NotFoundException('User not found');
+      const token = await this.createToken({ userId: user._id.toString() });
+      await this.sendEmailVerification({ email: user.email, token });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static async sendEmailVerification({ email, token }: { email: string; token: string }) {
+    try {
+      await mailService.sendMail({
+        to: email,
+        subject: 'Verify Email',
+        html: `<p>Click <a href="${CLIENT_URL}/verify-email?token=${token}">here</a> to verify your email.</p>`,
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   static async createToken({ userId }: { userId: string }) {

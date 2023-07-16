@@ -7,6 +7,7 @@ export interface User {
   phoneNumber: string;
   password: string;
   salt?: string;
+  isVerified?: boolean;
 }
 
 const UserSchema = new mongoose.Schema<User>({
@@ -31,6 +32,10 @@ const UserSchema = new mongoose.Schema<User>({
     required: true,
   },
   salt: String,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 UserSchema.set('toJSON', {
