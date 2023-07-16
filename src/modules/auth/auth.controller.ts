@@ -2,7 +2,14 @@ import { auth } from '@/middlewares/auth';
 import { NextFunction, Request, Response, Router } from 'express';
 import { validateRequest } from 'zod-express-middleware';
 import { AuthService } from './auth.service';
-import { signInDto, signUpDto, forgotPasswordDto, resetPasswordDto, verifyEmailDto } from './dto/auth-payload.dto';
+import {
+  signInDto,
+  signUpDto,
+  forgotPasswordDto,
+  resetPasswordDto,
+  verifyEmailDto,
+  confirmEmailDto,
+} from './dto/auth-payload.dto';
 
 export const router: Router = Router();
 
@@ -36,7 +43,7 @@ router
     }
   )
   .put(
-    'verify-email',
+    '/verify-email',
     auth,
     validateRequest({
       body: verifyEmailDto,
@@ -44,16 +51,23 @@ router
     async (req: Request, res: Response) => {
       await AuthService.verifyEmail(req.body, req.user);
       res.status(200).json({
+        message: 'Please check your email to verify your account.',
+      });
+    }
+  )
+  .put(
+    '/confirm-email',
+    auth,
+    validateRequest({
+      body: confirmEmailDto,
+    }),
+    async (req: Request, res: Response) => {
+      await AuthService.confirmEmail(req.user, req.body.code);
+      res.status(200).json({
         message: 'Verify email successfully.',
       });
     }
   )
-  .put('/confirm-email', auth, async (req: Request, res: Response) => {
-    await AuthService.confirmEmail(req.user);
-    res.status(200).json({
-      message: 'Verify email successfully.',
-    });
-  })
   .post(
     '/reset-password',
     auth,

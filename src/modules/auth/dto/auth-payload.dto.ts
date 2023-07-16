@@ -76,3 +76,9 @@ export const verifyEmailDto = z.object({
 });
 
 export type VerifyEmailDto = Required<z.infer<typeof verifyEmailDto>>;
+
+export const confirmEmailDto = z.object({
+  code: z.string({
+    required_error: 'Code is required',
+  }),
+});

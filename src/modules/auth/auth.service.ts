@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User, UserDocument, UserModel } from '../users/users.schema';
 import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from './dto/auth-payload.dto';
+import { redisService } from '@/lib/redis.service';
 
 export class AuthService {
   static async signUp(signUpDto: SignUpDto) {
@@ -18,9 +19,11 @@ export class AuthService {
 
     const newUser = await UserModel.create(body);
     const token = await this.createToken({ userId: newUser._id.toString() });
+    const code = crypto.randomUUID();
     await this.sendEmailVerification({
       email: newUser.email,
       token,
+      code,
     });
     return newUser;
   }
@@ -30,15 +33,19 @@ export class AuthService {
       const user = await UserModel.findOne({ email: email }).exec();
       if (!user) throw new NotFoundException('User not found');
       const token = await this.createToken({ userId: user._id.toString() });
-      await this.sendEmailVerification({ email: user.email, token });
+      const code = crypto.randomUUID();
+      await redisService.set(`verify-email:${user._id}`, code, 'EX', 60 * 60 * 24);
+      await this.sendEmailVerification({ email: user.email, token, code });
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
 
-  static async confirmEmail(user: UserDocument) {
+  static async confirmEmail(user: UserDocument, code: string) {
     try {
+      const redisCode = await redisService.get(`verify-email:${user._id}`);
+      if (redisCode !== code) throw new UnauthorizedException('Invalid code');
       user.isVerified = true;
       await user.save();
     } catch (error) {
@@ -47,12 +54,12 @@ export class AuthService {
     }
   }
 
-  static async sendEmailVerification({ email, token }: { email: string; token: string }) {
+  static async sendEmailVerification({ email, token, code }: { email: string; token: string; code }) {
     try {
       await mailService.sendMail({
         to: email,
         subject: 'Verify Email',
-        html: `<p>Click <a href="${CLIENT_URL}/verify-email?token=${token}">here</a> to verify your email.</p>`,
+        html: `<p>Click <a href="${CLIENT_URL}/verify-email?token=${token}&code=${code}">here</a> to verify your email.</p>`,
       });
     } catch (error) {
       console.error(error);
