@@ -36,7 +36,7 @@ router
     }
   )
   .put('/verify-email', auth, async (req: Request, res: Response) => {
-    await AuthService.verifyEmail(req.body, req.user);
+    await AuthService.verifyEmail(req.user);
     res.status(200).json({
       message: 'Please check your email to verify your account.',
     });
@@ -47,11 +47,15 @@ router
     validateRequest({
       body: confirmEmailDto,
     }),
-    async (req: Request, res: Response) => {
-      await AuthService.confirmEmail(req.user, req.body.code);
-      res.status(200).json({
-        message: 'Verify email successfully.',
-      });
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await AuthService.confirmEmail(req.user, req.body.code);
+        res.status(200).json({
+          message: 'Verify email successfully.',
+        });
+      } catch (error) {
+        next(error);
+      }
     }
   )
   .post(

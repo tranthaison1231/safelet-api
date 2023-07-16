@@ -28,10 +28,8 @@ export class AuthService {
     return newUser;
   }
 
-  static async verifyEmail({ email }: { email: string }, user: UserDocument) {
+  static async verifyEmail(user: UserDocument) {
     try {
-      const user = await UserModel.findOne({ email: email }).exec();
-      if (!user) throw new NotFoundException('User not found');
       const token = await this.createToken({ userId: user._id.toString() });
       const code = crypto.randomUUID();
       await redisService.set(`verify-email:${user._id}`, code, 'EX', 60 * 60 * 24);
@@ -47,6 +45,7 @@ export class AuthService {
       const redisCode = await redisService.get(`verify-email:${user._id}`);
       if (redisCode !== code) throw new UnauthorizedException('Invalid code');
       user.isVerified = true;
+      redisService.del(`verify-email:${user._id}`);
       await user.save();
     } catch (error) {
       console.error(error);
