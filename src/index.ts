@@ -2,6 +2,7 @@ import cors from 'cors';
 import { router as alarms } from '@/modules/alarms/alarms.controller';
 import { router as auth } from '@/modules/auth/auth.controller';
 import { router as users } from '@/modules/users/users.controller';
+import { router as upload } from '@/modules/upload/upload.controller';
 import express, { Express, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { logger } from './middlewares/logger';
@@ -22,6 +23,8 @@ const bootstrap = async () => {
     app.use('/api', auth);
     app.use('/api/users', users);
     app.use('/api/alarms', alarms);
+    app.use('/api/upload', upload);
+
     app.get('*', function (_req: Request, res: Response) {
       return res.status(404).json({ status: 404, message: 'Not Found' });
     });

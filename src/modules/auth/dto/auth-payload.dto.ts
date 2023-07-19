@@ -72,3 +72,12 @@ export const confirmEmailDto = z.object({
     required_error: 'Code is required',
   }),
 });
+
+export const updateProfileDto = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  avatarURL: z.string().url('Avatar URL is not valid. Please provide a valid URL.').optional(),
+});
+
+export type UpdateProfileDto = Required<z.infer<typeof updateProfileDto>>;

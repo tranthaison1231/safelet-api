@@ -1,12 +1,12 @@
 import { mailService } from '@/lib/mail.service';
+import { redisService } from '@/lib/redis.service';
 import { CLIENT_URL, JWT_SECRET } from '@/utils/constants';
 import { NotFoundException, UnauthorizedException } from '@/utils/exceptions';
 import { comparePassword, hashPassword } from '@/utils/password';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User, UserDocument, UserModel } from '../users/users.schema';
-import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from './dto/auth-payload.dto';
-import { redisService } from '@/lib/redis.service';
+import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto, UpdateProfileDto } from './dto/auth-payload.dto';
 
 export class AuthService {
   static async signUp(signUpDto: SignUpDto) {
@@ -99,6 +99,27 @@ export class AuthService {
     try {
       user.password = await hashPassword(password, user.salt);
       await user.save();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static async updateProfile({ firstName, lastName, phoneNumber, avatarURL }: UpdateProfileDto, user: UserDocument) {
+    try {
+      if (firstName) {
+        user.firstName = firstName;
+      }
+      if (lastName) {
+        user.lastName = lastName;
+      }
+      if (phoneNumber) {
+        user.phoneNumber = phoneNumber;
+      }
+      if (avatarURL) {
+        user.avatarURL = avatarURL;
+      }
+      return await user.save();
     } catch (error) {
       console.error(error);
       throw error;

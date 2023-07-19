@@ -8,6 +8,7 @@ export interface User {
   password: string;
   salt?: string;
   isVerified?: boolean;
+  avatarURL?: string;
 }
 
 const UserSchema = new mongoose.Schema<User>({
@@ -35,6 +36,9 @@ const UserSchema = new mongoose.Schema<User>({
   isVerified: {
     type: Boolean,
     default: false,
+  },
+  avatarURL: {
+    type: String,
   },
 });
 

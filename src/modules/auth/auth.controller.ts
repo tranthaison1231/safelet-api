@@ -2,7 +2,14 @@ import { auth } from '@/middlewares/auth';
 import { NextFunction, Request, Response, Router } from 'express';
 import { validateRequest } from 'zod-express-middleware';
 import { AuthService } from './auth.service';
-import { signInDto, signUpDto, forgotPasswordDto, resetPasswordDto, confirmEmailDto } from './dto/auth-payload.dto';
+import {
+  signInDto,
+  signUpDto,
+  forgotPasswordDto,
+  resetPasswordDto,
+  confirmEmailDto,
+  updateProfileDto,
+} from './dto/auth-payload.dto';
 
 export const router: Router = Router();
 
@@ -91,4 +98,19 @@ router
     } catch (error) {
       next(error);
     }
-  });
+  })
+  .put(
+    '/profile',
+    auth,
+    validateRequest({
+      body: updateProfileDto,
+    }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const user = await AuthService.updateProfile(req.body, req.user);
+        res.status(200).json({ user });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
