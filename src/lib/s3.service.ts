@@ -1,6 +1,8 @@
+import { GetPresignedUrlDto } from '@/modules/upload/dto/upload.dto';
 import { AWS_ACCESS_KEY_ID, AWS_REGION, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME } from '@/utils/constants';
 import { getFileName } from '@/utils/file';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 class S3Service {
   private s3: S3Client;
@@ -28,6 +30,28 @@ class S3Service {
       return { url };
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  }
+
+  async presignedUrlS3({ fileName, type, folderPrefix }: GetPresignedUrlDto) {
+    try {
+      const key = folderPrefix ? `${folderPrefix}/${getFileName(fileName)}` : getFileName(fileName);
+      const command = new PutObjectCommand({
+        Key: key,
+        Bucket: AWS_BUCKET_NAME,
+        ContentType: type,
+        ACL: 'public-read',
+      });
+      const uploadUrl = await getSignedUrl(this.s3, command, {
+        expiresIn: 3600,
+      });
+
+      return {
+        uploadUrl,
+      };
+    } catch (error) {
+      console.error('Error getting file with S3: ', error);
       throw error;
     }
   }
