@@ -17,7 +17,7 @@ import {
 } from './dto/auth-payload.dto';
 import { uuid } from '@/utils/uuid';
 
-export const ACCESS_TOKEN_EXPIRE_IN = 60 * 60;
+export const ACCESS_TOKEN_EXPIRE_IN = 60;
 export const REFRESH_TOKEN_EXPIRE_IN = 60 * 60 * 24 * 30;
 
 export class AuthService {
