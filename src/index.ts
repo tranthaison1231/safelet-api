@@ -15,8 +15,14 @@ const bootstrap = async () => {
     console.log('🚀 Connecting to MongoDB');
 
     const app: Express = express();
+
     app.use(express.json());
-    app.use(cors());
+    app.use(
+      cors({
+        credentials: true,
+        origin: '*',
+      })
+    );
     app.use(logger);
     app.use(logging);
 
