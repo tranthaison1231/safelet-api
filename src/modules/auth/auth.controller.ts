@@ -90,7 +90,6 @@ router
       try {
         const data = await AuthService.signIn(req.body);
         res.cookie('refreshToken', data.refreshToken, {
-          httpOnly: true,
           maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
         });
         res.status(200).json(data);
@@ -131,7 +130,6 @@ router
       if (!userID || !refreshToken) throw new UnauthorizedException('Invalid token');
       const data = await AuthService.refreshToken(refreshToken, userID as string);
       res.cookie('refreshToken', data.refreshToken, {
-        httpOnly: true,
         maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
       });
       res.status(200).json(data);
