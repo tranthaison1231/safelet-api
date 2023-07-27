@@ -20,7 +20,7 @@ const bootstrap = async () => {
     app.use(express.json());
     app.use(
       cors({
-        origin: '*',
+        origin: ['http://localhost:5173', 'https://safelet-ui.vercel.app'],
         credentials: true,
       })
     );
