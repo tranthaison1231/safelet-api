@@ -91,6 +91,7 @@ router
         const data = await AuthService.signIn(req.body);
         res.cookie('refreshToken', data.refreshToken, {
           maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
+          sameSite: 'none',
         });
         res.status(200).json(data);
       } catch (error) {
@@ -131,6 +132,7 @@ router
       const data = await AuthService.refreshToken(refreshToken, userID as string);
       res.cookie('refreshToken', data.refreshToken, {
         maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
+        sameSite: 'none',
       });
       res.status(200).json(data);
     } catch (error) {
