@@ -1,7 +1,7 @@
 import { auth } from '@/middlewares/auth';
 import { NextFunction, Request, Response, Router } from 'express';
 import { validateRequest } from 'zod-express-middleware';
-import { AuthService } from './auth.service';
+import { AuthService, REFRESH_TOKEN_EXPIRE_IN } from './auth.service';
 import {
   signInDto,
   signUpDto,
@@ -90,6 +90,10 @@ router
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const data = await AuthService.signIn(req.body);
+        res.cookie('refreshToken', data.refreshToken, {
+          httpOnly: true,
+          maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
+        });
         res.status(200).json(data);
       } catch (error) {
         next(error);
@@ -156,6 +160,7 @@ router
   )
   .put('/logout', auth, async (req: Request, res: Response, next: NextFunction) => {
     try {
+      res.clearCookie('refreshToken');
       await AuthService.logout(req.user);
       res.status(200).json({
         message: 'Logout successfully.',
