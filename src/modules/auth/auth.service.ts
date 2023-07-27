@@ -1,8 +1,9 @@
 import { mailService } from '@/lib/mail.service';
 import { redisService } from '@/lib/redis.service';
-import { CLIENT_URL, JWT_SECRET } from '@/utils/constants';
+import { CLIENT_URL } from '@/utils/constants';
 import { NotFoundException, UnauthorizedException } from '@/utils/exceptions';
 import { comparePassword, hashPassword } from '@/utils/password';
+import { generateOpaqueToken } from '@/utils/token';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User, UserDocument, UserModel } from '../users/users.schema';
@@ -15,7 +16,7 @@ import {
   SignUpDto,
   UpdateProfileDto,
 } from './dto/auth-payload.dto';
-import { generateOpaqueToken } from '@/utils/token';
+import { uuid } from '@/utils/uuid';
 
 const ACCESS_TOKEN_EXPIRE_IN = 60 * 60;
 const REFRESH_TOKEN_EXPIRE_IN = 60 * 60 * 24 * 30;
@@ -31,7 +32,7 @@ export class AuthService {
 
     const newUser = await UserModel.create(body);
     const token = await this.createToken({ userId: newUser._id.toString() });
-    const code = crypto.randomUUID();
+    const code = uuid();
     await this.sendEmailVerification({
       email: newUser.email,
       token,
@@ -43,7 +44,7 @@ export class AuthService {
   static async verifyEmail(user: UserDocument) {
     try {
       const token = await this.createToken({ userId: user._id.toString() });
-      const code = crypto.randomUUID();
+      const code = uuid();
       await redisService.set(`verify-email:${user._id}`, code, 'EX', 60 * 60 * 24);
       await this.sendEmailVerification({ email: user.email, token, code });
     } catch (error) {
@@ -81,7 +82,7 @@ export class AuthService {
   static async createToken({ userId }: { userId: string }) {
     let jwtSecret = await redisService.get(`jwt-secret:${userId}`);
     if (!jwtSecret) {
-      jwtSecret = crypto.randomUUID();
+      jwtSecret = uuid();
       await redisService.set(`jwt-secret:${userId}`, jwtSecret, 'EX', ACCESS_TOKEN_EXPIRE_IN);
     }
     return jwt.sign({ userId }, jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRE_IN });
