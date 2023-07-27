@@ -19,8 +19,8 @@ const bootstrap = async () => {
     app.use(express.json());
     app.use(
       cors({
-        credentials: true,
         origin: '*',
+        credentials: true,
       })
     );
     app.use(logger);
