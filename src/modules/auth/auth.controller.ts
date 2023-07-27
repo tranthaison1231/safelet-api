@@ -9,7 +9,11 @@ import {
   resetPasswordDto,
   confirmEmailDto,
   updateProfileDto,
+  refreshTokenDto,
+  changePasswordDto,
 } from './dto/auth-payload.dto';
+import jwt from 'jsonwebtoken';
+import { UnauthorizedException } from '@/utils/exceptions';
 
 export const router: Router = Router();
 
@@ -113,4 +117,50 @@ router
         next(error);
       }
     }
-  );
+  )
+  .put(
+    '/refresh-token',
+    validateRequest({
+      body: refreshTokenDto,
+    }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        const jwtObject = jwt.decode(token) as { userId: string };
+        const userID = jwtObject?.userId;
+        if (!userID) throw new UnauthorizedException('Invalid token');
+        const data = await AuthService.refreshToken(req.body, userID as string);
+        res.status(200).json(data);
+      } catch (error) {
+        next(error);
+      }
+    }
+  )
+  .put(
+    '/change-password',
+    auth,
+    validateRequest({
+      body: changePasswordDto,
+    }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await AuthService.changePassword(req.body, req.user);
+        res.status(200).json({
+          message: 'Change password successfully.',
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  )
+  .put('/logout', auth, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await AuthService.logout(req.user);
+      res.status(200).json({
+        message: 'Logout successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  });

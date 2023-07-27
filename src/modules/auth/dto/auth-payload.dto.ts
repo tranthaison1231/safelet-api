@@ -81,3 +81,26 @@ export const updateProfileDto = z.object({
 });
 
 export type UpdateProfileDto = Required<z.infer<typeof updateProfileDto>>;
+
+export const refreshTokenDto = z.object({
+  refreshToken: z.string({
+    required_error: 'Refresh Token is required',
+  }),
+});
+
+export type RefreshTokenDto = Required<z.infer<typeof refreshTokenDto>>;
+
+export const changePasswordDto = z.object({
+  password: z
+    .string({
+      required_error: 'Password is required',
+    })
+    .min(4),
+  newPassword: z
+    .string({
+      required_error: 'New Password is required',
+    })
+    .min(4),
+});
+
+export type ChangePasswordDto = Required<z.infer<typeof changePasswordDto>>;

@@ -6,7 +6,19 @@ import { comparePassword, hashPassword } from '@/utils/password';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User, UserDocument, UserModel } from '../users/users.schema';
-import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto, UpdateProfileDto } from './dto/auth-payload.dto';
+import {
+  ChangePasswordDto,
+  ForgotPasswordDto,
+  RefreshTokenDto,
+  ResetPasswordDto,
+  SignInDto,
+  SignUpDto,
+  UpdateProfileDto,
+} from './dto/auth-payload.dto';
+import { generateOpaqueToken } from '@/utils/token';
+
+const ACCESS_TOKEN_EXPIRE_IN = 60 * 60;
+const REFRESH_TOKEN_EXPIRE_IN = 60 * 60 * 24 * 30;
 
 export class AuthService {
   static async signUp(signUpDto: SignUpDto) {
@@ -67,7 +79,18 @@ export class AuthService {
   }
 
   static async createToken({ userId }: { userId: string }) {
-    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
+    let jwtSecret = await redisService.get(`jwt-secret:${userId}`);
+    if (!jwtSecret) {
+      jwtSecret = crypto.randomUUID();
+      await redisService.set(`jwt-secret:${userId}`, jwtSecret, 'EX', ACCESS_TOKEN_EXPIRE_IN);
+    }
+    return jwt.sign({ userId }, jwtSecret, { expiresIn: ACCESS_TOKEN_EXPIRE_IN });
+  }
+
+  static async createRefreshToken({ userId }: { userId: string }) {
+    const refreshToken = generateOpaqueToken();
+    await redisService.set(`refresh-token:${userId}`, refreshToken, 'EX', REFRESH_TOKEN_EXPIRE_IN);
+    return refreshToken;
   }
 
   static async signIn({ email, password }: SignInDto) {
@@ -75,8 +98,17 @@ export class AuthService {
     if (!user) throw new NotFoundException('User not found');
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) throw new UnauthorizedException('Password does not match');
-    const token = await this.createToken({ userId: user._id.toString() });
-    return { token };
+    const accessToken = await this.createToken({ userId: user._id.toString() });
+    const refreshToken = await this.createRefreshToken({ userId: user._id.toString() });
+    return { accessToken, refreshToken, expiresIn: ACCESS_TOKEN_EXPIRE_IN };
+  }
+
+  static async refreshToken({ refreshToken }: RefreshTokenDto, userID: string) {
+    const redisRefreshToken = await redisService.get(`refresh-token:${userID}`);
+    if (redisRefreshToken !== refreshToken) throw new UnauthorizedException('Invalid refresh token');
+    const accessToken = await this.createToken({ userId: userID.toString() });
+    const newRefreshToken = await this.createRefreshToken({ userId: userID.toString() });
+    return { accessToken, refreshToken: newRefreshToken, expiresIn: ACCESS_TOKEN_EXPIRE_IN };
   }
 
   static async forgotPassword({ email }: ForgotPasswordDto) {
@@ -99,6 +131,30 @@ export class AuthService {
     try {
       user.password = await hashPassword(password, user.salt);
       await user.save();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static changePassword({ newPassword, password }: ChangePasswordDto, user: UserDocument) {
+    try {
+      const isMatch = comparePassword(password, user.password);
+      if (!isMatch) throw new UnauthorizedException('Password does not match');
+      if (user.password === newPassword)
+        throw new UnauthorizedException('New password must be different from old password');
+      user.password = newPassword;
+      return user.save();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static logout(user: UserDocument) {
+    try {
+      redisService.del(`jwt-secret:${user._id}`);
+      redisService.del(`refresh-token:${user._id}`);
     } catch (error) {
       console.error(error);
       throw error;

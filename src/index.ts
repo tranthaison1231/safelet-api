@@ -25,7 +25,7 @@ const bootstrap = async () => {
     app.use('/api/alarms', alarms);
     app.use('/api/upload', upload);
 
-    app.get('*', function (_req: Request, res: Response) {
+    app.use('*', function (_req: Request, res: Response) {
       return res.status(404).json({ status: 404, message: 'Not Found' });
     });
 
