@@ -7,14 +7,15 @@ import jwt from 'jsonwebtoken';
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) {
+  console.log(token);
+  if (!token) {
     return next(new UnauthorizedException('Unauthorized'));
   }
   const jwtObject = jwt.decode(token) as { userId: string };
   const userID = jwtObject?.userId;
-  const secretToken = await redisService.get(`jwt-secret:${userID}`);
+  const jwtSecret = await redisService.get(`jwt-secret:${userID}`);
 
-  jwt.verify(token, secretToken, async (err: any, data: any) => {
+  jwt.verify(token, jwtSecret, async (err: any, data: any) => {
     if (err) {
       return next(new UnauthorizedException('Unauthorized'));
     }

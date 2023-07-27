@@ -1,19 +1,18 @@
 import { auth } from '@/middlewares/auth';
+import { UnauthorizedException } from '@/utils/exceptions';
 import { NextFunction, Request, Response, Router } from 'express';
+import jwt from 'jsonwebtoken';
 import { validateRequest } from 'zod-express-middleware';
 import { AuthService, REFRESH_TOKEN_EXPIRE_IN } from './auth.service';
 import {
-  signInDto,
-  signUpDto,
+  changePasswordDto,
+  confirmEmailDto,
   forgotPasswordDto,
   resetPasswordDto,
-  confirmEmailDto,
+  signInDto,
+  signUpDto,
   updateProfileDto,
-  refreshTokenDto,
-  changePasswordDto,
 } from './dto/auth-payload.dto';
-import jwt from 'jsonwebtoken';
-import { UnauthorizedException } from '@/utils/exceptions';
 
 export const router: Router = Router();
 
@@ -122,25 +121,24 @@ router
       }
     }
   )
-  .put(
-    '/refresh-token',
-    validateRequest({
-      body: refreshTokenDto,
-    }),
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        const jwtObject = jwt.decode(token) as { userId: string };
-        const userID = jwtObject?.userId;
-        if (!userID) throw new UnauthorizedException('Invalid token');
-        const data = await AuthService.refreshToken(req.body, userID as string);
-        res.status(200).json(data);
-      } catch (error) {
-        next(error);
-      }
+  .put('/refresh-token', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      const jwtObject = jwt.decode(token) as { userId: string };
+      const userID = jwtObject?.userId;
+      const refreshToken = req.cookies.refreshToken;
+      if (!userID || !refreshToken) throw new UnauthorizedException('Invalid token');
+      const data = await AuthService.refreshToken(refreshToken, userID as string);
+      res.cookie('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
+      });
+      res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-  )
+  })
   .put(
     '/change-password',
     auth,

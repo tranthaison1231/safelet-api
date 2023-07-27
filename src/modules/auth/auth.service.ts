@@ -10,7 +10,6 @@ import { User, UserDocument, UserModel } from '../users/users.schema';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
-  RefreshTokenDto,
   ResetPasswordDto,
   SignInDto,
   SignUpDto,
@@ -104,7 +103,7 @@ export class AuthService {
     return { accessToken, refreshToken, expiresIn: ACCESS_TOKEN_EXPIRE_IN };
   }
 
-  static async refreshToken({ refreshToken }: RefreshTokenDto, userID: string) {
+  static async refreshToken(refreshToken: string, userID: string) {
     const redisRefreshToken = await redisService.get(`refresh-token:${userID}`);
     if (redisRefreshToken !== refreshToken) throw new UnauthorizedException('Invalid refresh token');
     const accessToken = await this.createToken({ userId: userID.toString() });

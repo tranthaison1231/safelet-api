@@ -1,4 +1,5 @@
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { router as alarms } from '@/modules/alarms/alarms.controller';
 import { router as auth } from '@/modules/auth/auth.controller';
 import { router as users } from '@/modules/users/users.controller';
@@ -19,10 +20,11 @@ const bootstrap = async () => {
     app.use(express.json());
     app.use(
       cors({
-        origin: '*',
+        origin: 'http://localhost:5173',
         credentials: true,
       })
     );
+    app.use(cookieParser());
     app.use(logger);
     app.use(logging);
 
