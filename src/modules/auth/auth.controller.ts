@@ -92,6 +92,8 @@ router
         res.cookie('refreshToken', data.refreshToken, {
           maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
           sameSite: 'none',
+          httpOnly: true,
+          secure: true,
         });
         res.status(200).json(data);
       } catch (error) {
@@ -133,6 +135,8 @@ router
       res.cookie('refreshToken', data.refreshToken, {
         maxAge: REFRESH_TOKEN_EXPIRE_IN * 1000,
         sameSite: 'none',
+        httpOnly: true,
+        secure: true,
       });
       res.status(200).json(data);
     } catch (error) {
