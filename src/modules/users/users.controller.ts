@@ -6,14 +6,28 @@ import { validateRequest } from 'zod-express-middleware';
 import { userUpdatedDto } from './dto/user-payload.dto';
 import { UserService } from './users.service';
 import { auth } from '@/middlewares/auth';
+import { role } from '@/middlewares/role';
 
 export const router: Router = Router();
 
 router
-  .get('/', auth, async (_req: Request, res: Response) => {
-    const users = await UserService.getAll();
-    res.status(200).json({ users });
-  })
+  .get(
+    '/',
+    auth,
+    role(['admin']),
+    validateRequest({
+      params: z.object({
+        page: z.number().optional(),
+        limit: z.number().optional(),
+      }),
+    }),
+    async (req: Request, res: Response) => {
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const data = await UserService.getAll(page, limit);
+      res.status(200).json(data);
+    }
+  )
   .get(
     '/:id',
     validateRequest({

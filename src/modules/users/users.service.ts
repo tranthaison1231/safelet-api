@@ -2,10 +2,19 @@ import { UserUpdatedDto } from './dto/user-payload.dto';
 import { UserModel } from './users.schema';
 
 export class UserService {
-  static async getAll() {
+  static async getAll(page: number, limit: number) {
     try {
-      const users = await UserModel.find().exec();
-      return users;
+      const items = await UserModel.find()
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec();
+      const total = await UserModel.countDocuments().exec();
+      return {
+        items,
+        page,
+        limit,
+        total,
+      };
     } catch (error) {
       console.error(error);
       throw error;
