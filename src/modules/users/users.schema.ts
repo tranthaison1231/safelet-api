@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 
+export enum UserRole {
+  user = 'user',
+  admin = 'admin',
+}
+
 export interface User {
   firstName?: string;
   lastName?: string;
@@ -9,6 +14,7 @@ export interface User {
   salt?: string;
   isVerified?: boolean;
   avatarURL?: string;
+  role?: string;
 }
 
 const UserSchema = new mongoose.Schema<User>({
@@ -39,6 +45,11 @@ const UserSchema = new mongoose.Schema<User>({
   },
   avatarURL: {
     type: String,
+  },
+  role: {
+    type: String,
+    enum: [UserRole.admin, UserRole.user],
+    default: UserRole.user,
   },
 });
 
