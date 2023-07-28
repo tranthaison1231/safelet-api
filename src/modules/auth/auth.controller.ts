@@ -94,6 +94,7 @@ router
           sameSite: 'none',
           httpOnly: true,
           secure: true,
+          path: '/api/refresh-token',
         });
         res.status(200).json(data);
       } catch (error) {
@@ -137,6 +138,7 @@ router
         sameSite: 'none',
         httpOnly: true,
         secure: true,
+        path: '/api/refresh-token',
       });
       res.status(200).json(data);
     } catch (error) {
