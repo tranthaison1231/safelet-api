@@ -137,13 +137,15 @@ export class AuthService {
     }
   }
 
-  static changePassword({ newPassword, password }: ChangePasswordDto, user: UserDocument) {
+  static async changePassword({ newPassword, password }: ChangePasswordDto, user: UserDocument) {
     try {
-      const isMatch = comparePassword(password, user.password);
+      const isMatch = await comparePassword(password, user.password);
       if (!isMatch) throw new UnauthorizedException('Password does not match');
       if (user.password === newPassword)
         throw new UnauthorizedException('New password must be different from old password');
-      user.password = newPassword;
+      const salt = await bcrypt.genSalt();
+
+      user.password = await hashPassword(newPassword, salt);
       return user.save();
     } catch (error) {
       console.error(error);
